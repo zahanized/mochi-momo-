@@ -1,7 +1,8 @@
 import { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
-function LoginPage({ onNavigate }) {
+function RegisterPage({ onNavigate }) {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -12,16 +13,16 @@ function LoginPage({ onNavigate }) {
     setError('');
 
     try {
-      const res = await fetch('http://localhost:5001/api/auth/login', {
+      const res = await fetch('http://localhost:5001/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ name, email, password }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message || 'Login failed');
+        setError(data.message || 'Registration failed');
         return;
       }
 
@@ -38,7 +39,7 @@ function LoginPage({ onNavigate }) {
         className="w-full max-w-sm rounded-lg bg-white p-8 shadow-md"
       >
         <h1 className="mb-6 text-2xl font-bold text-gray-800">
-          Log in to Mochi Momo
+          Sign up for Mochi Momo
         </h1>
 
         {error && (
@@ -46,6 +47,17 @@ function LoginPage({ onNavigate }) {
             {error}
           </p>
         )}
+
+        <label className="mb-1 block text-sm font-medium text-gray-700">
+          Name
+        </label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="mb-4 w-full rounded border border-gray-300 p-2"
+          required
+        />
 
         <label className="mb-1 block text-sm font-medium text-gray-700">
           Email
@@ -73,17 +85,17 @@ function LoginPage({ onNavigate }) {
           type="submit"
           className="w-full rounded bg-purple-600 py-2 font-semibold text-white hover:bg-purple-700"
         >
-          Log In
+          Sign Up
         </button>
 
         <p className="mt-4 text-center text-sm text-gray-500">
-          Don't have an account?{' '}
+          Already have an account?{' '}
           <button
             type="button"
-            onClick={() => onNavigate('register')}
+            onClick={() => onNavigate('login')}
             className="text-purple-600 hover:underline"
           >
-            Sign up
+            Log in
           </button>
         </p>
       </form>
@@ -91,4 +103,4 @@ function LoginPage({ onNavigate }) {
   );
 }
 
-export default LoginPage;
+export default RegisterPage;
