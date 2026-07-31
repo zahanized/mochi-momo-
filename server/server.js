@@ -6,6 +6,7 @@ const { Server } = require('socket.io');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const taskRoutes = require('./routes/taskRoutes');
+const managerRoutes = require('./routes/managerRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -20,6 +21,8 @@ connectDB();
 
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
+app.use('/api/manager', managerRoutes);
+
 
 app.get('/', (req, res) => {
   res.send('API is running...');
