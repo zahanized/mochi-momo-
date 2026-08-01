@@ -7,6 +7,7 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const managerRoutes = require('./routes/managerRoutes');
+const roomRoutes = require('./routes/roomRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -17,12 +18,12 @@ const io = new Server(server, {
   },
 });
 
+app.set('io', io);
+
 connectDB();
 
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
-app.use('/api/manager', managerRoutes);
-
 
 app.get('/', (req, res) => {
   res.send('API is running...');
@@ -30,6 +31,8 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/manager', managerRoutes);
+app.use('/api/rooms', roomRoutes);
 
 io.on('connection', (socket) => {
   console.log(`Socket connected: ${socket.id}`);
@@ -49,6 +52,11 @@ io.on('connection', (socket) => {
       userName,
       timestamp: new Date().toISOString(),
     });
+  });
+
+  socket.on('leaveRoom', ({ roomId, userName }) => {
+    socket.leave(roomId);
+    socket.to(roomId).emit('userLeft', { userName });
   });
 
   socket.on('disconnect', () => {

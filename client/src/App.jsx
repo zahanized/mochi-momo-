@@ -8,6 +8,7 @@ import KanbanBoard from './components/KanbanBoard';
 import RoomPage from './pages/RoomPage';
 import ProfilePage from './pages/ProfilePage';
 import SoundscapePlayer from './components/SoundscapePlayer';
+import StickyTaskList from './components/StickyTaskList';
 
 function App() {
   const { user, logout } = useContext(AuthContext);
@@ -92,6 +93,7 @@ function App() {
       {view === 'room' && <RoomPage />}
       {view === 'profile' && <ProfilePage />}
 
+      {view !== 'board' && <StickyTaskList />}
       <SoundscapePlayer />
     </div>
   );
