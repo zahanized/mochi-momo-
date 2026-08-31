@@ -7,17 +7,20 @@ import { TaskProvider } from './context/TaskContext.jsx';
 import { FocusModeProvider } from './context/FocusModeContext.jsx';
 import { RoomProvider } from './context/RoomContext.jsx';
 import { TimerProvider } from './context/TimerContext.jsx';
+import { ScratchpadProvider } from './context/ScratchpadContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
       <RoomProvider>
         <TimerProvider>
-          <TaskProvider>
-            <FocusModeProvider>
-              <App />
-            </FocusModeProvider>
-          </TaskProvider>
+          <ScratchpadProvider>
+            <TaskProvider>
+              <FocusModeProvider>
+                <App />
+              </FocusModeProvider>
+            </TaskProvider>
+          </ScratchpadProvider>
         </TimerProvider>
       </RoomProvider>
     </AuthProvider>

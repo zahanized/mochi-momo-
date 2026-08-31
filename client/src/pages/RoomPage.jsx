@@ -3,6 +3,7 @@ import { AuthContext } from '../context/AuthContext';
 import { useRoom } from '../context/RoomContext';
 import PomodoroTimer from '../components/PomodoroTimer';
 import BreakAlertModal from '../components/BreakAlertModal';
+import Scratchpad from '../components/Scratchpad';
 import socket from '../socket';
 
 const MODES = {
@@ -150,6 +151,7 @@ function RoomPage() {
 
         <PomodoroTimer />
         <BreakAlertModal />
+        <Scratchpad />
 
         <div className="mb-4 flex-1 overflow-y-auto rounded-lg bg-white p-4 shadow">
           {messages.map((m, i) =>

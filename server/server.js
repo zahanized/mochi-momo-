@@ -9,6 +9,7 @@ const taskRoutes = require('./routes/taskRoutes');
 const managerRoutes = require('./routes/managerRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const pomodoroRoutes = require('./routes/pomodoroRoutes');
+const scratchpadRoutes = require('./routes/scratchpadRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -35,6 +36,7 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/manager', managerRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/timer', pomodoroRoutes);
+app.use('/api/scratchpad', scratchpadRoutes);
 
 io.on('connection', (socket) => {
   console.log(`Socket connected: ${socket.id}`);
