@@ -24,6 +24,14 @@ const userSchema = new mongoose.Schema(
       enum: ['user', 'manager'],
       default: 'user',
     },
+    streakCount: {
+      type: Number,
+      default: 0,
+    },
+    lastLoginDate: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );

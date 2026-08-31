@@ -59,7 +59,14 @@ function ProfilePage() {
         onSubmit={handleSubmit}
         className="w-full max-w-sm rounded-lg bg-white p-8 shadow-md"
       >
-        <h1 className="mb-6 text-2xl font-bold text-gray-800">My Profile</h1>
+        <h1 className="mb-2 text-2xl font-bold text-gray-800">My Profile</h1>
+
+        <div className="mb-6 flex items-center gap-1 text-sm font-medium text-orange-600">
+          <span>🔥</span>
+          <span>
+            {user.streakCount ?? 0} day{(user.streakCount ?? 0) === 1 ? '' : 's'} streak
+          </span>
+        </div>
 
         {error && (
           <p className="mb-4 rounded bg-red-100 p-2 text-sm text-red-600">

@@ -6,6 +6,14 @@ const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 };
 
+const daysBetween = (dateA, dateB) => {
+  const a = new Date(dateA);
+  const b = new Date(dateB);
+  a.setHours(0, 0, 0, 0);
+  b.setHours(0, 0, 0, 0);
+  return Math.round((a - b) / (1000 * 60 * 60 * 24));
+};
+
 const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -53,16 +61,36 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
+    const today = new Date();
+
+    if (!user.lastLoginDate) {
+      // first ever login
+      user.streakCount = 1;
+    } else {
+      const gap = daysBetween(today, user.lastLoginDate);
+      if (gap === 1) {
+        user.streakCount += 1; // consecutive day
+      } else if (gap > 1) {
+        user.streakCount = 1; // missed a day, streak resets
+      }
+      // gap === 0 (same day) or gap < 0 (clock oddity): leave streakCount unchanged
+    }
+
+    user.lastLoginDate = today;
+    await user.save();
+
     res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
+      streakCount: user.streakCount,
       token: generateToken(user._id),
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-password');
@@ -98,4 +126,5 @@ const updateProfile = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 module.exports = { registerUser, loginUser, getProfile, updateProfile };

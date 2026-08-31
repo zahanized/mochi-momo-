@@ -9,8 +9,11 @@ export const AuthProvider = ({ children }) => {
   });
 
   const login = (userData) => {
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
+    setUser((prev) => {
+      const merged = { ...(prev || {}), ...userData };
+      localStorage.setItem('user', JSON.stringify(merged));
+      return merged;
+    });
   };
 
   const logout = () => {
