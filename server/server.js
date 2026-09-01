@@ -58,9 +58,35 @@ io.on('connection', (socket) => {
     });
   });
 
+  // --- Video Grid signaling (FR-3.2) ---
+  // A client calls this once its PeerJS connection is ready. We hand back
+  // the list of peers already in the room, and tell everyone else a new
+  // peer showed up. No video/audio ever passes through this server.
+  socket.on('videoReady', ({ roomId, peerId, userName }) => {
+    socket.data.peerId = peerId;
+
+    const roomSockets = io.sockets.adapter.rooms.get(roomId);
+    const existingPeers = [];
+    if (roomSockets) {
+      for (const socketId of roomSockets) {
+        if (socketId === socket.id) continue;
+        const other = io.sockets.sockets.get(socketId);
+        if (other?.data?.peerId) {
+          existingPeers.push({ peerId: other.data.peerId, userName: other.data.userName });
+        }
+      }
+    }
+
+    socket.emit('existingPeers', existingPeers);
+    socket.to(roomId).emit('newPeer', { peerId, userName });
+  });
+
   socket.on('leaveRoom', ({ roomId, userName }) => {
     socket.leave(roomId);
     socket.to(roomId).emit('userLeft', { userName });
+    if (socket.data.peerId) {
+      socket.to(roomId).emit('peerLeft', { peerId: socket.data.peerId });
+    }
   });
 
   socket.on('disconnect', () => {
@@ -69,6 +95,9 @@ io.on('connection', (socket) => {
       socket.to(socket.data.roomId).emit('userLeft', {
         userName: socket.data.userName,
       });
+      if (socket.data.peerId) {
+        socket.to(socket.data.roomId).emit('peerLeft', { peerId: socket.data.peerId });
+      }
     }
   });
 });

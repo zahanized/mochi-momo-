@@ -5,6 +5,7 @@ import PomodoroTimer from '../components/PomodoroTimer';
 import BreakAlertModal from '../components/BreakAlertModal';
 import Scratchpad from '../components/Scratchpad';
 import socket from '../socket';
+import VideoGrid from '../components/VideoGrid';
 
 const MODES = {
   SELECT: 'select',
@@ -152,6 +153,10 @@ function RoomPage() {
         <PomodoroTimer />
         <BreakAlertModal />
         <Scratchpad />
+        <PomodoroTimer />
+        <BreakAlertModal />
+        <Scratchpad />
+        <VideoGrid />
 
         <div className="mb-4 flex-1 overflow-y-auto rounded-lg bg-white p-4 shadow">
           {messages.map((m, i) =>
