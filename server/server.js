@@ -48,6 +48,25 @@ io.on('connection', (socket) => {
     console.log(`${userName} joined room ${roomId}`);
 
     socket.to(roomId).emit('userJoined', { userName });
+
+    // Hand the newcomer everyone's current availability status (FR-3.12-1)
+    const roomSockets = io.sockets.adapter.rooms.get(roomId);
+    const existingStatuses = [];
+    if (roomSockets) {
+      for (const socketId of roomSockets) {
+        if (socketId === socket.id) continue;
+        const other = io.sockets.sockets.get(socketId);
+        if (other?.data?.status) {
+          existingStatuses.push({ userName: other.data.userName, status: other.data.status });
+        }
+      }
+    }
+    socket.emit('existingStatuses', existingStatuses);
+  });
+
+  socket.on('setStatus', ({ roomId, userName, status }) => {
+    socket.data.status = status;
+    socket.to(roomId).emit('statusUpdate', { userName, status });
   });
 
   socket.on('sendMessage', ({ roomId, message, userName }) => {
@@ -58,10 +77,6 @@ io.on('connection', (socket) => {
     });
   });
 
-  // --- Video Grid signaling (FR-3.2) ---
-  // A client calls this once its PeerJS connection is ready. We hand back
-  // the list of peers already in the room, and tell everyone else a new
-  // peer showed up. No video/audio ever passes through this server.
   socket.on('videoReady', ({ roomId, peerId, userName }) => {
     socket.data.peerId = peerId;
 

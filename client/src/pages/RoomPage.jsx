@@ -4,8 +4,9 @@ import { useRoom } from '../context/RoomContext';
 import PomodoroTimer from '../components/PomodoroTimer';
 import BreakAlertModal from '../components/BreakAlertModal';
 import Scratchpad from '../components/Scratchpad';
-import socket from '../socket';
 import VideoGrid from '../components/VideoGrid';
+import AvailabilityBadge from '../components/AvailabilityBadge';
+import socket from '../socket';
 
 const MODES = {
   SELECT: 'select',
@@ -13,6 +14,9 @@ const MODES = {
   JOIN_PRIVATE: 'joinPrivate',
   BROWSE_PUBLIC: 'browsePublic',
 };
+
+const STATUS_OPTIONS = ['Deep Focus', 'On a Break', 'Open to Chat'];
+const DEFAULT_STATUS = 'Open to Chat';
 
 function RoomPage() {
   const { user } = useContext(AuthContext);
@@ -38,25 +42,51 @@ function RoomPage() {
   const [joinName, setJoinName] = useState('');
   const [joinPassword, setJoinPassword] = useState('');
 
+  const [statuses, setStatuses] = useState({});
+  const [myStatus, setMyStatus] = useState(DEFAULT_STATUS);
+
   useEffect(() => {
     if (!currentRoom) return;
 
     const handleReceiveMessage = (data) => setMessages((prev) => [...prev, data]);
     const handleUserJoined = ({ userName }) =>
       setMessages((prev) => [...prev, { system: true, message: `${userName} joined the room` }]);
-    const handleUserLeft = ({ userName }) =>
+    const handleUserLeft = ({ userName }) => {
       setMessages((prev) => [...prev, { system: true, message: `${userName} left the room` }]);
+      setStatuses((prev) => {
+        const next = { ...prev };
+        delete next[userName];
+        return next;
+      });
+    };
+    const handleExistingStatuses = (list) => {
+      const map = {};
+      list.forEach(({ userName, status }) => {
+        map[userName] = status;
+      });
+      setStatuses((prev) => ({ ...map, ...prev }));
+    };
+    const handleStatusUpdate = ({ userName, status }) => {
+      setStatuses((prev) => ({ ...prev, [userName]: status }));
+    };
 
     socket.on('receiveMessage', handleReceiveMessage);
     socket.on('userJoined', handleUserJoined);
     socket.on('userLeft', handleUserLeft);
+    socket.on('existingStatuses', handleExistingStatuses);
+    socket.on('statusUpdate', handleStatusUpdate);
 
     socket.emit('joinRoom', { roomId: currentRoom.roomId, userName: user?.name });
+    socket.emit('setStatus', { roomId: currentRoom.roomId, userName: user?.name, status: DEFAULT_STATUS });
+    setMyStatus(DEFAULT_STATUS);
+    setStatuses((prev) => ({ ...prev, [user?.name]: DEFAULT_STATUS }));
 
     return () => {
       socket.off('receiveMessage', handleReceiveMessage);
       socket.off('userJoined', handleUserJoined);
       socket.off('userLeft', handleUserLeft);
+      socket.off('existingStatuses', handleExistingStatuses);
+      socket.off('statusUpdate', handleStatusUpdate);
       socket.emit('leaveRoom', { roomId: currentRoom.roomId, userName: user?.name });
     };
   }, [currentRoom, user?.name]);
@@ -122,12 +152,20 @@ function RoomPage() {
     setMessageInput('');
   };
 
+  const handleStatusChange = (e) => {
+    const newStatus = e.target.value;
+    setMyStatus(newStatus);
+    setStatuses((prev) => ({ ...prev, [user?.name]: newStatus }));
+    socket.emit('setStatus', { roomId: currentRoom.roomId, userName: user?.name, status: newStatus });
+  };
+
   const handleLeave = () => {
     setMessages([]);
     setCreateName('');
     setCreatePassword('');
     setJoinName('');
     setJoinPassword('');
+    setStatuses({});
     setMode(MODES.SELECT);
     leaveRoom();
   };
@@ -150,9 +188,28 @@ function RoomPage() {
           </button>
         </div>
 
-        <PomodoroTimer />
-        <BreakAlertModal />
-        <Scratchpad />
+        <div className="mb-4 rounded-lg bg-white p-3 shadow">
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-gray-700">Who's here</h2>
+            <select
+              value={myStatus}
+              onChange={handleStatusChange}
+              className="rounded border border-gray-300 p-1 text-xs"
+            >
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {Object.entries(statuses).map(([name, status]) => (
+              <AvailabilityBadge key={name} userName={name} status={status} />
+            ))}
+          </div>
+        </div>
+
         <PomodoroTimer />
         <BreakAlertModal />
         <Scratchpad />
