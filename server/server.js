@@ -10,6 +10,8 @@ const managerRoutes = require('./routes/managerRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const pomodoroRoutes = require('./routes/pomodoroRoutes');
 const scratchpadRoutes = require('./routes/scratchpadRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const soundscapeRoutes = require('./routes/soundscapeRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -37,6 +39,8 @@ app.use('/api/manager', managerRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/timer', pomodoroRoutes);
 app.use('/api/scratchpad', scratchpadRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/soundscape', soundscapeRoutes);
 
 io.on('connection', (socket) => {
   console.log(`Socket connected: ${socket.id}`);
@@ -49,7 +53,6 @@ io.on('connection', (socket) => {
 
     socket.to(roomId).emit('userJoined', { userName });
 
-    // Hand the newcomer everyone's current availability status (FR-3.12-1)
     const roomSockets = io.sockets.adapter.rooms.get(roomId);
     const existingStatuses = [];
     if (roomSockets) {

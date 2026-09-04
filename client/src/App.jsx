@@ -7,6 +7,7 @@ import RegisterPage from './pages/RegisterPage';
 import KanbanBoard from './components/KanbanBoard';
 import RoomPage from './pages/RoomPage';
 import ProfilePage from './pages/ProfilePage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
 import SoundscapePlayer from './components/SoundscapePlayer';
 import StickyTaskList from './components/StickyTaskList';
 
@@ -59,6 +60,16 @@ function App() {
             >
               Profile
             </button>
+            {user.role === 'manager' && (
+              <button
+                onClick={() => changeView('admin')}
+                className={`rounded px-3 py-1 text-sm text-white hover:bg-gray-700 ${
+                  view === 'admin' ? 'bg-gray-700' : ''
+                }`}
+              >
+                Admin
+              </button>
+            )}
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -92,6 +103,7 @@ function App() {
       {view === 'board' && <KanbanBoard />}
       {view === 'room' && <RoomPage />}
       {view === 'profile' && <ProfilePage />}
+      {view === 'admin' && user.role === 'manager' && <AdminDashboardPage />}
 
       {view !== 'board' && <StickyTaskList />}
       <SoundscapePlayer />

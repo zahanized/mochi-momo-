@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 
 const TRACKS = [
   { id: 'lofi', label: 'Lo-Fi', type: 'file', src: '/sounds/lofi.mp3' },
@@ -12,6 +13,7 @@ const TRACKS = [
 ];
 
 function SoundscapePlayer() {
+  const { user } = useContext(AuthContext);
   const [current, setCurrent] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef(null);
@@ -54,6 +56,17 @@ function SoundscapePlayer() {
     noiseCtxRef.current = ctx;
   };
 
+  const logPlay = (track) => {
+    fetch('http://localhost:5001/api/soundscape/track', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${user?.token}`,
+      },
+      body: JSON.stringify({ trackId: track.id, label: track.label }),
+    }).catch(() => {}); // popularity tracking is best-effort, never block playback
+  };
+
   const handleSelect = (track) => {
     if (audioRef.current) audioRef.current.pause();
     stopNoise();
@@ -66,6 +79,7 @@ function SoundscapePlayer() {
 
     setCurrent(track.id);
     setIsPlaying(true);
+    logPlay(track);
 
     if (track.type === 'noise') {
       playNoise(track.noiseType);

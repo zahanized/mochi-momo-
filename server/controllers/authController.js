@@ -40,6 +40,7 @@ const registerUser = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      role: user.role,
       token: generateToken(user._id),
     });
   } catch (error) {
@@ -64,16 +65,14 @@ const loginUser = async (req, res) => {
     const today = new Date();
 
     if (!user.lastLoginDate) {
-      // first ever login
       user.streakCount = 1;
     } else {
       const gap = daysBetween(today, user.lastLoginDate);
       if (gap === 1) {
-        user.streakCount += 1; // consecutive day
+        user.streakCount += 1;
       } else if (gap > 1) {
-        user.streakCount = 1; // missed a day, streak resets
+        user.streakCount = 1;
       }
-      // gap === 0 (same day) or gap < 0 (clock oddity): leave streakCount unchanged
     }
 
     user.lastLoginDate = today;
@@ -83,6 +82,7 @@ const loginUser = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      role: user.role,
       streakCount: user.streakCount,
       token: generateToken(user._id),
     });
@@ -119,6 +119,7 @@ const updateProfile = async (req, res) => {
       _id: updatedUser._id,
       name: updatedUser.name,
       email: updatedUser.email,
+      role: updatedUser.role,
       profilePicture: updatedUser.profilePicture,
       token: generateToken(updatedUser._id),
     });
